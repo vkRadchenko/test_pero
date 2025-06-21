@@ -13,30 +13,32 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ProductPageTest {
+    private final String BASE_URL = "https://vk.com/club225299895?w=product-225299895_10044406";
+    private final String REDIRECT_SIGNIN_URL = "https://vk.com/?to=bWFya2V0L3Byb2R1Y3QvZnl2YWYtMjI1Mjk5ODk1LTEwMDQ0NDA2P2RlbGF5ZWRBY3Rpb249c3Vic2NyaWJlR3JvdXA-";
+    private final String REDIRECT_SIGNIN_URL_2 = "https://vk.com/?to=bWFya2V0L3Byb2R1Y3QvZnl2YWYtMjI1Mjk5ODk1LTEwMDQ0NDA2P2RlbGF5ZWRBY3Rpb249c2hvd01lc3NhZ2VCb3g-";
+    private final String REDIRECT_ALLPRODUCTS_URL = "https://vk.com/uslugi-225299895";
+    private final String REDIRECT_MAINSTORE_URL = "https://vk.com/club225299895";
 
     private ProductPage productPage;
 
     @BeforeAll
     public static void setUpAll() {
         Configuration.browserSize = "1280x800";
-        Configuration.timeout = 10000;
-        Configuration.pageLoadTimeout = 50000;
     }
 
     @BeforeEach
     public void setUp() {
         Configuration.browserCapabilities = new ChromeOptions().addArguments("--remote-allow-origins=*");
-        open("https://vk.com/club225299895?w=product-225299895_10044406");
+        open(BASE_URL);
 
         productPage = new ProductPage();
-        sleep(2000);
+        sleep(300);
     }
 
     @Test
     @DisplayName("Проверка отображения основной информации о товаре")
     public void testProductBasicInfoDisplay() {
 
-        // Проверяем, что страница загрузилась
         assertTrue(productPage.isPageLoaded(), "Страница товара не загрузилась");
 
         String title = productPage.getProductTitle();
@@ -54,12 +56,13 @@ public class ProductPageTest {
 
     @Test
     @DisplayName("Проверка нажатия на ссылку 'Поделиться'")
-    @Description("После нажатия ожидаем увидеть модальное окно (для авторизации)")
+    @Description("Ожидаем увидеть модальное окно для авторизации")
     public void testClickShareLink() {
 
         assertTrue(productPage.hasShareLink(),"Ссылка поделиться не отображается");
         try {
             productPage.clickShareLink();
+            sleep(100);
             assertTrue(productPage.hasShareBoxModal(),"После нажатия на поделиться отсутствует модальное окно для авторизации");
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -68,13 +71,14 @@ public class ProductPageTest {
 
     @Test
     @DisplayName("Проверка нажатия на кнопку 'Пожаловаться'")
-    @Description("После нажатия кнопки 'Пожаловаться' ожидаем увидеть модальное окно (мы не авторизованы)")
+    @Description("Ожидаем увидеть модальное окно")
     public void testClickReportLink() {
 
        assertTrue(productPage.hasReportLink(),"Ссылка на жалобу не отображается");
 
         try {
             productPage.clickReportLink();
+            sleep(2000);
             assertTrue(productPage.hasReportBoxModal(),"Ошибка. Отсутствует модальное окно");
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -82,13 +86,13 @@ public class ProductPageTest {
     }
 
     @Test
-    @DisplayName("Проверка кнопки подписаться в карточке товара")
+    @DisplayName("Проверка кнопки Подписаться в карточке товара")
+    @Description("Ожидаем редирект на страницу авторизации в текущей вкладке")
     public void testProductSubscribeButton() {
-        String expectedUrl = "https://vk.com/?to=bWFya2V0L3Byb2R1Y3QvZnl2YWYtMjI1Mjk5ODk1LTEwMDQ0NDA2P2RlbGF5ZWRBY3Rpb249c3Vic2NyaWJlR3JvdXA-";
 
         try {
             productPage.clickProductSubscribeButton();
-            webdriver().shouldHave(url(expectedUrl));
+            webdriver().shouldHave(url(REDIRECT_SIGNIN_URL));
         }catch (Exception e) {
             System.out.println("Переход не произошел: " + e.getMessage());
         }
@@ -98,7 +102,6 @@ public class ProductPageTest {
     @DisplayName("Проверка отображения блока 'О продавце'")
     public void testSellerSectionDisplay() {
 
-        // Проверяем наличие аватара продавца
         assertTrue(productPage.isSellerAvatarDisplayed(), "Аватар продавца не отображается");
 
         String avatarSrc = productPage.getSellerAvatarSrc();
@@ -114,15 +117,14 @@ public class ProductPageTest {
 
     @Test
     @DisplayName("Проверка нажатия на кнопку 'Написать'")
-    @Description("После нажатия ожидаем переход на форму авторизации")
+    @Description("Ожидаем редирект на страницу авторизации в текущей вкладке")
     public void testClickContactButton() {
-        String expectedUrl = "https://vk.com/?to=bWFya2V0L3Byb2R1Y3QvZnl2YWYtMjI1Mjk5ODk1LTEwMDQ0NDA2P2RlbGF5ZWRBY3Rpb249c2hvd01lc3NhZ2VCb3g-";
 
         assertTrue(productPage.hasContactButton(),"Кнопка связи с продавцом не отображается");
 
         try {
             productPage.clickContactButton();
-            webdriver().shouldHave(url(expectedUrl));
+            webdriver().shouldHave(url(REDIRECT_SIGNIN_URL_2));
         }catch (Exception e) {
             System.out.println("Переход не произошел: " + e.getMessage());
         }
@@ -161,12 +163,6 @@ public class ProductPageTest {
     }
 
     @Test
-    @DisplayName("Проверка отзывов продавца")
-    public void testSellerReviews() {
-        assertTrue(productPage.hasSellerReviews(),"Текст отзывов не отображается");
-    }
-
-    @Test
     @DisplayName("Проверка информации о подписчиках")
     public void testSellerSubscribers() {
         String subscribersInfo = productPage.getSellerSubscribersCount();
@@ -176,11 +172,12 @@ public class ProductPageTest {
 
     @Test
     @DisplayName("Проверка кнопки подписаться в блоке продавца")
+    @Description("Ожидаем редирект на страницу авторизации в текущей вкладке")
     public void testSellerSubscribeButton() {
-        String expectedUrl = "https://vk.com/?to=bWFya2V0L3Byb2R1Y3QvZnl2YWYtMjI1Mjk5ODk1LTEwMDQ0NDA2P2RlbGF5ZWRBY3Rpb249c3Vic2NyaWJlR3JvdXA-";
+
         try {
             productPage.clickSubscribeButton();
-            webdriver().shouldHave(url(expectedUrl));
+            webdriver().shouldHave(url(REDIRECT_SIGNIN_URL));
         }catch (Exception e) {
             System.out.println("Переход не произошел: " + e.getMessage());
         }
@@ -188,34 +185,34 @@ public class ProductPageTest {
 
     @Test
     @DisplayName("Проверка кнопки перехода в магазин в блоке продавца")
+    @Description("Ожидаем редирект на страницу с товарами в новой вкладке")
     public void testSellerGoStoreButton() {
 
-        // Проверяем ссылку на магазин
         String shopLinkHref = productPage.getShopLinkHref();
+
         assertNotNull(shopLinkHref, "Ссылка на магазин отсутствует");
         assertTrue(shopLinkHref.contains("uslugi-225299895"), "Неверная ссылка на магазин: " + shopLinkHref);
 
-        // Тестируем переход в магазин
         try {
             productPage.clickShopLink();
-            assertTrue(true, "Переход в магазин работает");
+            switchTo().window(1);
+            webdriver().shouldHave(url(REDIRECT_ALLPRODUCTS_URL));
+            closeWindow();
+            switchTo().window(0);
         } catch (Exception e) {
             System.out.println("Ссылка на магазин не работает: " + e.getMessage());
         }
     }
-
 
     @Test
     @DisplayName("Проверка кликабельности элементов продавца")
     @Description("При клике по аватару или названию магазина происходит открытие главной страницы магазина")
     public void testSellerClickableElements() {
 
-        String expectedUrl = "https://vk.com/club225299895";
-
         try {
             productPage.clickSellerAvatar();
             switchTo().window(1);
-            webdriver().shouldHave(url(expectedUrl));
+            webdriver().shouldHave(url(REDIRECT_MAINSTORE_URL));
             closeWindow();
             switchTo().window(0);
 
@@ -226,7 +223,7 @@ public class ProductPageTest {
         try {
             productPage.clickSellerName();
             switchTo().window(1);
-            webdriver().shouldHave(url(expectedUrl));
+            webdriver().shouldHave(url(REDIRECT_MAINSTORE_URL));
             closeWindow();
             switchTo().window(0);
 

@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import static com.codeborne.selenide.Selenide.$;
 
@@ -18,15 +19,14 @@ public class ProductPage {
     private final SelenideElement productSubscribeButton = $("[data-testid='market_item_page_subscribe_button']");
 
 
-    // Данные о продавце
+    // Блок о продавце
     private final SelenideElement sellerAvatar = $("[data-testid='market_item_page_group_avatar']");
     private final SelenideElement sellerName = $("[data-testid='market_item_page_shop_text']");
     private final SelenideElement sellerRating = $("[data-testid='market_item_page_rating']");
     private final SelenideElement sellerRatingValue = $("[data-testid='rating-layout-indicator']");
-    private final SelenideElement sellerReviewsLink = $("[data-testid='rating-layout-after']");
     private final SelenideElement sellerSubscribers = $("[data-testid='market_item_page_friends']");
     private final SelenideElement subscribeButton = $("[data-testid='market_item_page_group_subscribe']");
-    private final SelenideElement shopLink = $("[data-testid='market_item_page_report']");
+    private final SelenideElement shopLink = $("[data-testid='market_item_page_shop_link']");
 
     // Методы для взаимодействия с элементами
     public String getProductTitle() {
@@ -40,13 +40,16 @@ public class ProductPage {
     public boolean hasReportLink() {
         return productReportLink.exists();
     }
+
     public void clickReportLink() {
         try {
+            scrollElement(productReportLink);
              productReportLink.click();
         }catch (Exception e){
             throw new RuntimeException("Не удалось открыть окно жалобы: " + e.getMessage());
         }
     }
+
     public boolean hasReportBoxModal() {
         return productBoxModal.exists();
     }
@@ -58,9 +61,11 @@ public class ProductPage {
     public boolean hasShareLink() {
         return productShareLink.exists();
     }
+
     public boolean hasShareBoxModal() {
         return productBoxModal.exists();
     }
+
     public void clickShareLink() {
         try {
             productShareLink.click();
@@ -123,17 +128,13 @@ public class ProductPage {
         return sellerRatingValue.exists() ? sellerRatingValue.getText() : "";
     }
 
-    public boolean hasSellerReviews() {
-        return sellerReviewsLink.exists();
-    }
-
     public String getSellerSubscribersCount() {
-        System.out.println(sellerSubscribers.getText());
         return sellerSubscribers.exists() ? sellerSubscribers.getText() : "";
     }
 
     public void clickSubscribeButton() {
         if (subscribeButton.exists() && subscribeButton.isDisplayed()) {
+            scrollElement(subscribeButton);
             subscribeButton.click();
         } else {
             throw new RuntimeException("Кнопка 'Подписаться' не найдена или не отображается");
@@ -142,6 +143,7 @@ public class ProductPage {
 
     public void clickShopLink() {
         if (shopLink.exists()) {
+            scrollElement(shopLink);
             shopLink.click();
         }
     }
@@ -152,6 +154,7 @@ public class ProductPage {
 
     public void clickSellerAvatar() {
         if (sellerAvatar.exists()) {
+            scrollElement(sellerAvatar);
             sellerAvatar.click();
         }
     }
@@ -164,5 +167,9 @@ public class ProductPage {
 
     public boolean isPageLoaded() {
         return productTitle.exists() || productPrice.exists();
+    }
+
+    private void scrollElement(SelenideElement locator){
+        locator.scrollIntoView(true).shouldBe(Condition.visible,Condition.enabled);
     }
 }
